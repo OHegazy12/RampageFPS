@@ -5,7 +5,7 @@ This is a Wolfenstein-like FPS fully named RetroRampage meant for IPhone, IPad a
 In order to create the app, the following had to be done:
 
 - [x] Create a portable game engine for the app.
-- [ ] Build the game and the levels from a 2D perspective before making the transition to 3D.
+- [x] Build the game and the levels from a 2D perspective before making the transition to 3D.
 - [ ] Raycast the game.
 - [ ] Texture Map the game.
 - [ ] Use sprites to create the monsters.
