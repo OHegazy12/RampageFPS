@@ -14,11 +14,13 @@ public struct Player
     public var velocity: Vector
     public let radius: Double = 0.25
     public let speed: Double = 2
+    public var direction: Vector
     
     public init(position: Vector)
     {
         self.position = position
         self.velocity = Vector(x: 0, y: 0)
+        self.direction = Vector(x: 1, y: 0)
     }
 }
 
