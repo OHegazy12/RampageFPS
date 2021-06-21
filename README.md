@@ -7,7 +7,7 @@ In order to create the app, the following had to be done:
 - [x] Create a portable game engine for the app.
 - [x] Build the game and the levels from a 2D perspective before making the transition to 3D.
 - [x] Raycast the game.
-- [ ] Texture Map the game.
+- [x] Texture Map the game.
 - [ ] Use sprites to create the monsters.
 - [ ] Fill the enemies with Artificial Intelligence and Animations to bring them to life.
 - [ ] Implement player damage and player death.
