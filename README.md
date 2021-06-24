@@ -14,10 +14,10 @@ In order to create the app, the following had to be done:
 - [ ] Give the player a weapon and implement weapon input.
 - [ ] Performance tunign to improve the rendering speed to fix the game's frame rate.
 - [ ] Add sliding doors between room to add challenges to the level.
-- [ ] Add some ectra level designs such as scret passages.
+- [ ] Add some extra level designs such as secret passages.
 - [ ] Add an end-of-level elevator and implement a second level.
 - [ ] Implement sound effects.
-- [ ] Implement a power-ups and inventory system.
+- [ ] Implement a power-up and inventory system.
 - [ ] Use pathfinding to enhance the monsters' intelligence.
 - [ ] Implement a HUD.
 - [ ] Create a title screen.
