@@ -9,7 +9,7 @@ In order to create the app, the following had to be done:
 - [x] Raycast the game.
 - [x] Texture Map the game.
 - [x] Use sprites to create the monsters.
-- [ ] Fill the enemies with Artificial Intelligence and Animations to bring them to life.
+- [x] Fill the enemies with Artificial Intelligence and Animations to bring them to life.
 - [ ] Implement player damage and player death.
 - [ ] Give the player a weapon and implement weapon input.
 - [ ] Performance tunign to improve the rendering speed to fix the game's frame rate.
