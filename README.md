@@ -10,7 +10,7 @@ In order to create the app, the following had to be done:
 - [x] Texture Map the game.
 - [x] Use sprites to create the monsters.
 - [x] Fill the enemies with Artificial Intelligence and Animations to bring them to life.
-- [ ] Implement player damage and player death.
+- [x] Implement player damage and player death.
 - [ ] Give the player a weapon and implement weapon input.
 - [ ] Performance tuning to improve the rendering speed to fix the game's frame rate.
 - [ ] Add sliding doors between room to add challenges to the level.
