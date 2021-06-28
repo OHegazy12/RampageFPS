@@ -12,7 +12,7 @@ In order to create the app, the following had to be done:
 - [x] Fill the enemies with Artificial Intelligence and Animations to bring them to life.
 - [x] Implement player damage and player death.
 - [x] Give the player a weapon and implement weapon input.
-- [ ] Performance tuning to improve the rendering speed to fix the game's frame rate.
+- [x] Performance tuning to improve the rendering speed to fix the game's frame rate.
 - [ ] Add sliding doors between room to add challenges to the level.
 - [ ] Add some extra level designs such as secret passages.
 - [ ] Add an end-of-level elevator and implement a second level.
