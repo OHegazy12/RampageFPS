@@ -24,3 +24,7 @@ class RampageTests: XCTestCase
     }
 }
 
+// Original Time of Performace: 1.08s, Best Performace Time: 0.695s
+
+// Current Performace Time ( as of 6/29/2021 ): 0.695s
+
