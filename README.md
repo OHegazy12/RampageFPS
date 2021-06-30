@@ -13,7 +13,7 @@ In order to create the app, the following had to be done:
 - [x] Implement player damage and player death.
 - [x] Give the player a weapon and implement weapon input.
 - [x] Performance tuning to improve the rendering speed to fix the game's frame rate.
-- [ ] Add sliding doors between room to add challenges to the level.
+- [x] Add sliding doors between rooms for simple level design.
 - [ ] Add some extra level designs such as secret passages.
 - [ ] Add an end-of-level elevator and implement a second level.
 - [ ] Implement sound effects.
