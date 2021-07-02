@@ -6,7 +6,7 @@
 //  Copyright © 2021 Nick Lockwood. All rights reserved.
 //
 
-public struct Vector {
+public struct Vector: Equatable {
     public var x, y: Double
 
     public init(x: Double, y: Double) {
@@ -71,5 +71,10 @@ public extension Vector {
     var orthogonal: Vector
     {
         return Vector(x: -y, y: x)
+    }
+    
+    func dot( _ rhs: Vector) -> Double
+    {
+        return x * rhs.x + y * rhs.y
     }
 }
