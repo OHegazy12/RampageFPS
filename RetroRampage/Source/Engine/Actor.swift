@@ -48,6 +48,11 @@ public extension Actor {
         return rect.intersection(with: door.rect)
     }
     
+    func intersection(with pushwall: Pushwall) -> Vector?
+    {
+        return rect.intersection(with: pushwall.rect)
+    }
+    
     func intersection(with world: World) -> Vector?
     {
         if let intersection = intersection(with: world.map)
@@ -57,6 +62,13 @@ public extension Actor {
         for door in world.doors
         {
             if let intersection = intersection(with: door)
+            {
+                return intersection
+            }
+        }
+        for pushwall in world.pushwalls where pushwall.position != position
+        {
+            if let intersection = intersection(with: pushwall)
             {
                 return intersection
             }
@@ -80,5 +92,25 @@ public extension Actor {
             position -= intersection
             attempts -= 1
         }
+    }
+    
+    func isStuck(in world: World) -> Bool
+    {
+        // If outside map
+        if position.x < 1 || position.x > world.map.size.x - 1 || position.y < 1 || position.y > world.map.size.y - 1
+        {
+            return true
+        }
+        
+        // If stuck in a wall
+        if world.map[Int(position.x), Int(position.y)].isWall
+        {
+            return true
+        }
+        
+        // If stuck in a pushwall
+        return world.pushwalls.contains(where: {
+            abs(position.x - $0.position.x) < 0.6 && abs(position.y - $0.position.y) < 0.6
+        })
     }
 }
