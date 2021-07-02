@@ -14,7 +14,7 @@ private let joystickRadius: Double = 40
 private let maximumTimeStep: Double = 1 / 20
 private let worldTimeStep: Double = 1 / 120
 
-private func loadTextures() -> Textures
+public func loadTextures() -> Textures
 {
     return Textures(loader: { name in
             guard let image = UIImage(named: name) else {
@@ -27,7 +27,7 @@ private func loadTextures() -> Textures
         })
 }
 
-private func loadMap() -> Tilemap {
+public func loadMap() -> Tilemap {
     let jsonURL = Bundle.main.url(forResource: "Map", withExtension: "json")!
     let jsonData = try! Data(contentsOf: jsonURL)
     return try! JSONDecoder().decode(Tilemap.self, from: jsonData)
@@ -44,6 +44,11 @@ class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        guard NSClassFromString("XCTestCase") == nil
+        else
+        {
+            return
+        }
         setUpImageView()
 
         let displayLink = CADisplayLink(target: self, selector: #selector(update))
