@@ -3,8 +3,6 @@
 //  Engine
 //
 //  Created by Omar Hegazy on 8/20/21.
-//  Copyright © 2021 Nick Lockwood. All rights reserved.
-//
 
 public enum SoundName: String, CaseIterable
 {
