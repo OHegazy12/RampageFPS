@@ -24,6 +24,26 @@ public func loadTextures() -> Textures {
     })
 }
 
+public extension SoundName
+{
+    var url: URL?
+    {
+        return Bundle.main.url(forResource: rawValue, withExtension: "mp3")
+    }
+}
+
+func setUpAudio()
+{
+    // Only use when necessary. Crashes app intentionally. Comment out whenneeding to test feature until all sound cases are accounted for.
+    for name in SoundName.allCases
+    {
+        precondition(name.url != nil, "Missing mp3 file for \(name.rawValue)")
+    }
+    
+    try? SoundManager.shared.activate()
+    _ = try? SoundManager.shared.preload(SoundName.allCases[0].url!)
+}
+
 class ViewController: UIViewController {
     private let imageView = UIImageView()
     private let panGesture = UIPanGestureRecognizer()
@@ -41,6 +61,7 @@ class ViewController: UIViewController {
             return
         }
 
+        setUpAudio()
         setUpImageView()
 
         let displayLink = CADisplayLink(target: self, selector: #selector(update))
@@ -82,10 +103,24 @@ class ViewController: UIViewController {
         let worldSteps = (timeStep / worldTimeStep).rounded(.up)
         for _ in 0 ..< Int(worldSteps) {
             if let action = world.update(timeStep: timeStep / worldSteps, input: input) {
-                switch action {
-                case .loadLevel(let index):
-                    let index = index % levels.count
-                    world.setLevel(levels[index])
+                switch action
+                {
+                    case .loadLevel(let index):
+                        let index = index % levels.count
+                        world.setLevel(levels[index])
+                case .playSounds(let sounds):
+                    for sound in sounds
+                    {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + sound.delay)
+                        {
+                            guard let url = sound.name.url else
+                            {
+                                return
+                            }
+                            
+                            try? SoundManager.shared.play(url, volume: sound.volume, pan: sound.pan)
+                        }
+                    }
                 }
             }
         }
