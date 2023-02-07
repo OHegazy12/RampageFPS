@@ -49,9 +49,16 @@ public extension Player {
         if input.isFiring, canFire {
             state = .firing
             animation = .smgFire
+            world.playSound(.smgFire, at: position)
             let ray = Ray(origin: position, direction: direction)
             if let index = world.pickMonster(ray) {
                 world.hurtMonster(at: index, damage: 10)
+                world.playSound(.monsterHit, at: world.monsters[index].position)
+            }
+            else
+            {
+                let hitPosition = world.hitTest(ray)
+                world.playSound(.ricochet, at: hitPosition)
             }
         }
         switch state {
