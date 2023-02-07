@@ -70,6 +70,7 @@ public extension Door {
         case .closed:
             if world.player.intersection(with: self) != nil {
                 state = .opening
+                world.playSound(.doorSlide, at: position)
                 time = 0
             }
         case .opening:
@@ -80,6 +81,7 @@ public extension Door {
         case .open:
             if time >= closeDelay {
                 state = .closing
+                world.playSound(.doorSlide, at: position)
                 time = 0
             }
         case .closing:
