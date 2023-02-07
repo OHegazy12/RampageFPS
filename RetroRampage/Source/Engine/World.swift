@@ -4,8 +4,10 @@
 //
 //  Created by Omar Hegazy on 6/12/21.
 
-public enum WorldAction {
+public enum WorldAction
+{
     case loadLevel(Int)
+    case playSounds([Sound])
 }
 
 public struct World {
@@ -16,6 +18,7 @@ public struct World {
     public private(set) var monsters: [Monster]
     public private(set) var player: Player!
     public private(set) var effects: [Effect]
+    private var sounds: [Sound] = []
     public private(set) var isLevelEnded: Bool
 
     public init(map: Tilemap) {
@@ -128,7 +131,12 @@ public extension World {
             hurtMonster(at: i, damage: 1)
         }
 
-        return nil
+        // Plays sounds
+        defer
+        {
+            sounds.removeAll()
+        }
+        return .playSounds(sounds)
     }
 
     var sprites: [Billboard] {
@@ -165,6 +173,18 @@ public extension World {
             monster.animation = .monsterHurt
         }
         monsters[index] = monster
+    }
+    
+    mutating func playSound(_ name: SoundName, at position: Vector)
+    {
+        let delta = position - player.position
+        let distance = delta.length
+        let dropOff = 0.5
+        let volume = 1 / (distance * distance * dropOff + 1)
+        let delay = distance * 2 / 343
+        let direction = distance > 0 ? delta / distance : player.direction
+        let pan = player.direction.orthogonal.dot(direction)
+        sounds.append(Sound(name: name, volume: volume, pan: pan, delay: delay))
     }
 
     mutating func endLevel() {
