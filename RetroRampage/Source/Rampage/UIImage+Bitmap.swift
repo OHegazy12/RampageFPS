@@ -2,9 +2,8 @@
 //  UIImage+Bitmap.swift
 //  Rampage
 //
-//  Created by Omar Hegazy on 6/12/21.
-//  Copyright © 2021 Nick Lockwood. All rights reserved.
-//
+//  Created by Omar Hegazy on 6/12/2021.
+
 
 import UIKit
 import Engine
@@ -40,7 +39,6 @@ extension UIImage {
         self.init(cgImage: cgImage, scale: 1, orientation: .leftMirrored)
     }
 }
-
 
 extension Bitmap {
     init?(image: UIImage) {
