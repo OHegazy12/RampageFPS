@@ -1,3 +1,8 @@
+public enum WorldAction
+{
+    case loadLevel(Int)
+}
+
 public struct World {
     public private(set) var map: Tilemap
     public private(set) var player: Player!
@@ -5,6 +10,8 @@ public struct World {
     public private(set) var effects: [Effect]
     public private(set) var doors: [Door]
     public private(set) var pushwalls: [Pushwall]
+    public private(set) var switches: [Switch]
+    public private(set) var isLevelEnded: Bool
 
     public init(map: Tilemap) {
         self.map = map
@@ -12,6 +19,8 @@ public struct World {
         self.effects = []
         self.doors = []
         self.pushwalls = []
+        self.switches = []
+        self.isLevelEnded = false
         reset()
     }
 }
@@ -21,7 +30,7 @@ public extension World {
         return map.size
     }
 
-    mutating func update(timeStep: Double, input: Input) {
+    mutating func update(timeStep: Double, input: Input) -> WorldAction? {
         player.direction = player.direction.rotated(by: input.rotation)
         player.velocity = player.direction * input.speed * player.speed
         player.position += player.velocity * timeStep
@@ -38,6 +47,17 @@ public extension World {
             return effect
         }
         
+        // Check for level end
+        if isLevelEnded
+        {
+            if effects.isEmpty
+            {
+                effects.append(Effect(type: .fadeIn, color: .black, duration: 0.5))
+                return .loadLevel(map.index + 1)
+            }
+            return nil
+        }
+        
         // Update player
         if player.isDead == false
         {
@@ -49,9 +69,10 @@ public extension World {
         }
         else if effects.isEmpty
         {
+            player = nil
             effects.append(Effect(type: .fadeIn, color: .red, duration: 0.5))
             reset()
-            return
+            return nil
         }
         
         // Update monsters
@@ -102,6 +123,8 @@ public extension World {
             monsters[i] = monster
         }
         
+        player.avoidWalls(in: self)
+        
         //Check for stuck actors
         if player.isStuck(in: self)
         {
@@ -111,7 +134,8 @@ public extension World {
         {
             hurtMonster(at: i, damage: 1)
         }
-        player.avoidWalls(in: self)
+    
+        return nil
     }
     
     var sprites: [Billboard]
@@ -136,6 +160,19 @@ public extension World {
         {
             effects.append(Effect(type: .fizzleOut, color: .red, duration: 2))
         }
+    }
+    
+    mutating func endLevel()
+    {
+        isLevelEnded = true
+        effects.append(Effect(type: .fadeOut, color: .black, duration: 2))
+    }
+    
+    mutating func setLevel(_ map: Tilemap)
+    {
+        let effects = self.effects
+        self = World(map: map)
+        self.effects = effects
     }
     
     mutating func reset()
@@ -176,6 +213,9 @@ public extension World {
                         tile = .wall
                     }
                     pushwalls.append(Pushwall(position: position, tile: tile))
+                case .switch:
+                    precondition(map[x, y].isWall, "Switch must be placed on a wall tile")
+                    switches.append(Switch(position: position))
                 }
             }
         }
