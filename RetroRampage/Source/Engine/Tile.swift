@@ -14,6 +14,9 @@ public enum Tile: Int, Decodable
     case crackWall = 2
     case slimeWall = 3
     case crackFloor = 4
+    case elevatorFloor
+    case elevatorSideWall
+    case elevatorBackWall
 }
 
 public extension Tile
@@ -32,6 +35,12 @@ public extension Tile
             return true
         case .crackFloor:
             return false
+        case .elevatorFloor:
+            return false
+        case .elevatorSideWall:
+            return true
+        case .elevatorBackWall:
+            return true
         }
     }
     
@@ -49,6 +58,12 @@ public extension Tile
             return [.crackWall, .crackWall2]
         case .slimeWall:
             return [.slimeWall, .slimeWall2]
+        case .elevatorSideWall:
+            return [ .elevatorSideWall, .elevatorSideWall]
+        case .elevatorBackWall:
+            return [.elevatorBackWall, .elevatorBackWall]
+        case .elevatorFloor:
+            return [.elevatorFloor, .elevatorCeiling]
         }
     }
 }
