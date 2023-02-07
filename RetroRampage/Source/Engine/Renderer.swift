@@ -3,13 +3,12 @@
 //  Engine
 //
 //  Created by Omar Hegazy on 6/12/21.
-//  Copyright © 2021 Nick Lockwood. All rights reserved.
-//
+
+private let fizzle = (0 ..< 10000).shuffled()
 
 public struct Renderer {
     public private(set) var bitmap: Bitmap
     private let textures: Textures
-    private let fizzle = (0 ..< 10000).shuffled()
 
     public init(width: Int, height: Int, textures: Textures) {
         self.bitmap = Bitmap(width: width, height: height, color: .black)
@@ -38,7 +37,7 @@ public extension Renderer {
             )
             let end = world.map.hitTest(ray)
             let wallDistance = (end - ray.origin).length
-            
+
             // Draw wall
             let wallHeight = 1.0
             let distanceRatio = viewPlaneDistance / focalLength
@@ -62,7 +61,13 @@ public extension Renderer {
             let textureX = Int(wallX * Double(wallTexture.width))
             let wallStart = Vector(x: Double(x), y: (Double(bitmap.height) - height) / 2 - 0.001)
             bitmap.drawColumn(textureX, of: wallTexture, at: wallStart, height: height)
-            
+
+            // Draw switch
+            if let s = world.switch(at: tileX, tileY) {
+                let switchTexture = textures[s.animation.texture]
+                bitmap.drawColumn(textureX, of: switchTexture, at: wallStart, height: height)
+            }
+
             // Draw floor and ceiling
             var floorTile: Tile!
             var floorTexture, ceilingTexture: Bitmap!
@@ -74,8 +79,7 @@ public extension Renderer {
                 let mapPosition = ray.origin + ray.direction * distance
                 let tileX = mapPosition.x.rounded(.down), tileY = mapPosition.y.rounded(.down)
                 let tile = world.map[Int(tileX), Int(tileY)]
-                if tile != floorTile
-                {
+                if tile != floorTile {
                     floorTexture = textures[tile.textures[0]]
                     ceilingTexture = textures[tile.textures[1]]
                     floorTile = tile
@@ -84,11 +88,10 @@ public extension Renderer {
                 bitmap[x, y] = floorTexture[normalized: textureX, textureY]
                 bitmap[x, bitmap.height - 1 - y] = ceilingTexture[normalized: textureX, textureY]
             }
-            
+
             // Sort sprites by distance
-            var spritesByDistance:  [(hit: Vector, distance: Double, sprite: Billboard)] = []
-            for sprite in world.sprites
-            {
+            var spritesByDistance: [(hit: Vector, distance: Double, sprite: Billboard)] = []
+            for sprite in world.sprites {
                 guard let hit = sprite.hitTest(ray) else {
                     continue
                 }
@@ -96,57 +99,54 @@ public extension Renderer {
                 if spriteDistance > wallDistance {
                     continue
                 }
-                spritesByDistance.append((hit: hit, distance: spriteDistance, sprite: sprite))
+                spritesByDistance.append(
+                    (hit: hit, distance: spriteDistance, sprite: sprite)
+                )
             }
-            spritesByDistance.sort(by: { $0.distance > $1.distance})
-            
+            spritesByDistance.sort(by: { $0.distance > $1.distance })
+
             // Draw sprites
-            for (hit, spriteDistance, sprite) in spritesByDistance
-            {
+            for (hit, spriteDistance, sprite) in spritesByDistance {
                 let perpendicular = spriteDistance / distanceRatio
-                    let height = wallHeight / perpendicular * Double(bitmap.height)
-                    let spriteX = (hit - sprite.start).length / sprite.length
+                let height = wallHeight / perpendicular * Double(bitmap.height)
+                let spriteX = (hit - sprite.start).length / sprite.length
                 let spriteTexture = textures[sprite.texture]
-                    let textureX = min(Int(spriteX * Double(spriteTexture.width)), spriteTexture.width - 1)
-                    let start = Vector(x: Double(x), y: (Double(bitmap.height) - height) / 2 + 0.001)
-                    bitmap.drawColumn(textureX, of: spriteTexture, at: start, height: height)
+                let textureX = min(Int(spriteX * Double(spriteTexture.width)), spriteTexture.width - 1)
+                let start = Vector(x: Double(x), y: (Double(bitmap.height) - height) / 2 + 0.001)
+                bitmap.drawColumn(textureX, of: spriteTexture, at: start, height: height)
             }
+
             columnPosition += step
-}
+        }
+
         // Player weapon
         let screenHeight = Double(bitmap.height)
         bitmap.drawImage(
             textures[world.player.animation.texture],
             at: Vector(x: Double(bitmap.width) / 2 - screenHeight / 2, y: 0),
-            size: Vector(x: screenHeight, y: screenHeight))
+            size: Vector(x: screenHeight, y: screenHeight)
+        )
 
         // Effects
-    for effect in world.effects
-    {
-        switch effect.type
-        {
-        case .fadeIn:
-            bitmap.tint(with: effect.color, opacity: 1 - effect.progress)
-        
-        case .fadeOut:
-            bitmap.tint(with: effect.color, opacity: effect.progress)
-        
-        case .fizzleOut:
-            let threshold = Int(effect.progress * Double(fizzle.count))
-            for x in 0 ..< bitmap.width {
-                for y in 0 ..< bitmap.height
-                {
-                    let granularity = 4
-                    let index = y / granularity * bitmap.width + x / granularity
-                    let fizzledIndex = fizzle[index % fizzle.count]
-                    if fizzledIndex <= threshold
-                    {
-                        bitmap[x, y] = effect.color
+        for effect in world.effects {
+            switch effect.type {
+            case .fadeIn:
+                bitmap.tint(with: effect.color, opacity: 1 - effect.progress)
+            case .fadeOut:
+                bitmap.tint(with: effect.color, opacity: effect.progress)
+            case .fizzleOut:
+                let threshold = Int(effect.progress * Double(fizzle.count))
+                for x in 0 ..< bitmap.width {
+                    for y in 0 ..< bitmap.height {
+                        let granularity = 4
+                        let index = y / granularity * bitmap.width + x / granularity
+                        let fizzledIndex = fizzle[index % fizzle.count]
+                        if fizzledIndex <= threshold {
+                            bitmap[x, y] = effect.color
+                        }
                     }
                 }
             }
         }
-        bitmap.tint(with: effect.color, opacity: 1 - effect.progress)
     }
-}
 }

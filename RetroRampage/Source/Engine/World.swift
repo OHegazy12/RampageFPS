@@ -1,25 +1,30 @@
-public enum WorldAction
-{
+//
+//  World.swift
+//  Engine
+//
+//  Created by Omar Hegazy on 6/12/21.
+
+public enum WorldAction {
     case loadLevel(Int)
 }
 
 public struct World {
     public private(set) var map: Tilemap
-    public private(set) var player: Player!
-    public private(set) var monsters: [Monster]
-    public private(set) var effects: [Effect]
     public private(set) var doors: [Door]
     public private(set) var pushwalls: [Pushwall]
     public private(set) var switches: [Switch]
+    public private(set) var monsters: [Monster]
+    public private(set) var player: Player!
+    public private(set) var effects: [Effect]
     public private(set) var isLevelEnded: Bool
 
     public init(map: Tilemap) {
         self.map = map
-        self.monsters = []
-        self.effects = []
         self.doors = []
         self.pushwalls = []
         self.switches = []
+        self.monsters = []
+        self.effects = []
         self.isLevelEnded = false
         reset()
     }
@@ -31,90 +36,81 @@ public extension World {
     }
 
     mutating func update(timeStep: Double, input: Input) -> WorldAction? {
-        player.direction = player.direction.rotated(by: input.rotation)
-        player.velocity = player.direction * input.speed * player.speed
-        player.position += player.velocity * timeStep
-        
         // Update effects
-        effects = effects.compactMap
-        {   effect in
-            if effect.isCompleted
-            {
+        effects = effects.compactMap { effect in
+            guard effect.time < effect.duration else {
                 return nil
             }
             var effect = effect
             effect.time += timeStep
             return effect
         }
-        
+
         // Check for level end
-        if isLevelEnded
-        {
-            if effects.isEmpty
-            {
+        if isLevelEnded {
+            if effects.isEmpty {
                 effects.append(Effect(type: .fadeIn, color: .black, duration: 0.5))
                 return .loadLevel(map.index + 1)
             }
             return nil
         }
-        
+
         // Update player
-        if player.isDead == false
-        {
+        if player.isDead == false {
             var player = self.player!
             player.animation.time += timeStep
             player.update(with: input, in: &self)
             player.position += player.velocity * timeStep
             self.player = player
-        }
-        else if effects.isEmpty
-        {
+        } else if effects.isEmpty {
             player = nil
-            effects.append(Effect(type: .fadeIn, color: .red, duration: 0.5))
             reset()
+            effects.append(Effect(type: .fadeIn, color: .red, duration: 0.5))
             return nil
         }
-        
+
         // Update monsters
-        for i in 0 ..< monsters.count
-        {
+        for i in 0 ..< monsters.count {
             var monster = monsters[i]
             monster.animation.time += timeStep
             monster.update(in: &self)
             monster.position += monster.velocity * timeStep
             monsters[i] = monster
         }
-        
+
         // Update doors
-        for i in 0 ..< doors.count
-        {
+        for i in 0 ..< doors.count {
             var door = doors[i]
             door.time += timeStep
             door.update(in: &self)
             doors[i] = door
         }
-        
+
         // Update pushwalls
-        for i in 0 ..< pushwalls.count
-        {
+        for i in 0 ..< pushwalls.count {
             var pushwall = pushwalls[i]
             pushwall.update(in: &self)
             pushwall.position += pushwall.velocity * timeStep
             pushwalls[i] = pushwall
         }
-        
+
+        // Update switches
+        for i in 0 ..< switches.count {
+            var s = switches[i]
+            s.animation.time += timeStep
+            s.update(in: &self)
+            switches[i] = s
+        }
+
         // Handle collisions
-        for i in monsters.indices
-        {
+        for i in 0 ..< monsters.count {
             var monster = monsters[i]
             if let intersection = player.intersection(with: monster) {
                 player.position -= intersection / 2
                 monster.position += intersection / 2
             }
-            for j in i + 1 ..< monsters.count
-            {
-                if let intersection = monster.intersection(with: monsters[j])
-                {
+            for j in i + 1 ..< monsters.count {
+                if let intersection = monster.intersection(with: monsters[j]) {
                     monster.position -= intersection / 2
                     monsters[j].position += intersection / 2
                 }
@@ -122,63 +118,71 @@ public extension World {
             monster.avoidWalls(in: self)
             monsters[i] = monster
         }
-        
         player.avoidWalls(in: self)
-        
-        //Check for stuck actors
-        if player.isStuck(in: self)
-        {
+
+        // Check for stuck actors
+        if player.isStuck(in: self) {
             hurtPlayer(1)
         }
-        for i in 0 ..< monsters.count where monsters[i].isStuck(in: self)
-        {
+        for i in 0 ..< monsters.count where monsters[i].isStuck(in: self) {
             hurtMonster(at: i, damage: 1)
         }
-    
+
         return nil
     }
-    
-    var sprites: [Billboard]
-    {
+
+    var sprites: [Billboard] {
         let ray = Ray(origin: player.position, direction: player.direction)
         return monsters.map { $0.billboard(for: ray) } + doors.map { $0.billboard }
-            + pushwalls.flatMap { $0.billboards (facing: player.position)}
+            + pushwalls.flatMap { $0.billboards(facing: player.position) }
     }
 
-    
-    mutating func hurtPlayer(_ damage: Double)
-    {
-        if player.isDead
-        {
+    mutating func hurtPlayer(_ damage: Double) {
+        if player.isDead {
             return
         }
         player.health -= damage
         player.velocity = Vector(x: 0, y: 0)
         let color = Color(r: 255, g: 0, b: 0, a: 191)
         effects.append(Effect(type: .fadeIn, color: color, duration: 0.2))
-        if player.isDead
-        {
+        if player.isDead {
             effects.append(Effect(type: .fizzleOut, color: .red, duration: 2))
         }
     }
-    
-    mutating func endLevel()
-    {
+
+    mutating func hurtMonster(at index: Int, damage: Double) {
+        var monster = monsters[index]
+        if monster.isDead {
+            return
+        }
+        monster.health -= damage
+        monster.velocity = Vector(x: 0, y: 0)
+        if monster.isDead {
+            monster.state = .dead
+            monster.animation = .monsterDeath
+        } else {
+            monster.state = .hurt
+            monster.animation = .monsterHurt
+        }
+        monsters[index] = monster
+    }
+
+    mutating func endLevel() {
         isLevelEnded = true
         effects.append(Effect(type: .fadeOut, color: .black, duration: 2))
     }
-    
-    mutating func setLevel(_ map: Tilemap)
-    {
+
+    mutating func setLevel(_ map: Tilemap) {
         let effects = self.effects
         self = World(map: map)
         self.effects = effects
     }
-    
-    mutating func reset()
-    {
+
+    mutating func reset() {
         self.monsters = []
         self.doors = []
+        self.switches = []
+        self.isLevelEnded = false
         var pushwallCount = 0
         for y in 0 ..< map.height {
             for x in 0 ..< map.width {
@@ -197,19 +201,15 @@ public extension World {
                     doors.append(Door(position: position, isVertical: isVertical))
                 case .pushwall:
                     pushwallCount += 1
-                    if pushwalls.count >= pushwallCount
-                    {
+                    if pushwalls.count >= pushwallCount {
                         let tile = pushwalls[pushwallCount - 1].tile
                         pushwalls[pushwallCount - 1] = Pushwall(position: position, tile: tile)
                         break
                     }
                     var tile = map[x, y]
-                    if tile.isWall
-                    {
-                        map[x, y] = map.closestFLoorTile(to: x, y) ?? .floor
-                    }
-                    else
-                    {
+                    if tile.isWall {
+                        map[x, y] = map.closestFloorTile(to: x, y) ?? .floor
+                    } else {
                         tile = .wall
                     }
                     pushwalls.append(Pushwall(position: position, tile: tile))
@@ -219,12 +219,13 @@ public extension World {
                 }
             }
         }
-}
-    func hitTest(_ ray: Ray) -> Vector
-    {
+    }
+
+    func hitTest(_ ray: Ray) -> Vector {
         var wallHit = map.hitTest(ray)
         var distance = (wallHit - ray.origin).length
-        let billboards = doors.map { $0.billboard } + pushwalls.flatMap { $0.billboards (facing: ray.origin) }
+        let billboards = doors.map { $0.billboard } +
+            pushwalls.flatMap { $0.billboards(facing: ray.origin) }
         for billboard in billboards {
             guard let hit = billboard.hitTest(ray) else {
                 continue
@@ -238,8 +239,8 @@ public extension World {
         }
         return wallHit
     }
-    func pickMonster(_ ray: Ray) -> Int?
-    {
+
+    func pickMonster(_ ray: Ray) -> Int? {
         let wallHit = hitTest(ray)
         var distance = (wallHit - ray.origin).length
         var result: Int? = nil
@@ -256,28 +257,17 @@ public extension World {
         }
         return result
     }
-    
-    func isDoor(at x: Int, _ y: Int) -> Bool
-    {
+
+    func isDoor(at x: Int, _ y: Int) -> Bool {
         return map.things[y * map.width + x] == .door
     }
 
-    mutating func hurtMonster(at index: Int, damage: Double)
-    {
-        var monster = monsters[index]
-        if monster.isDead {
-            return
+    func `switch`(at x: Int, _ y: Int) -> Switch? {
+        guard map.things[y * map.width + x] == .switch else {
+            return nil
         }
-        monster.health -= damage
-        monster.velocity = Vector(x: 0, y: 0)
-        if monster.isDead {
-            monster.state = .dead
-            monster.animation = .monsterDeath
-        } else {
-            monster.state = .hurt
-            monster.animation = .monsterHurt
-        }
-        monsters[index] = monster
-
+        return switches.first(where: {
+            Int($0.position.x) == x && Int($0.position.y) == y
+        })
     }
 }

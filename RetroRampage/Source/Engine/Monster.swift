@@ -3,39 +3,33 @@
 //  Engine
 //
 //  Created by Omar Hegazy on 6/21/21.
-//  Copyright © 2021 Nick Lockwood. All rights reserved.
-//
 
-public struct Monster: Actor
-{
-    public var position: Vector
-    public let radius: Double = 0.4375
-    public var state: MonsterState = .idle
-    public let speed: Double = 0.5
-    public var velocity: Vector = Vector(x: 0, y: 0)
-    public var animation: Animation = .monsterIdle
-    public let attackCooldown: Double = 0.4
-    public private(set) var lastAttackTime: Double = 0
-    public var health: Double = 50
-    
-    public init(position: Vector)
-    {
-        self.position = position
-    }
-}
-
-public enum MonsterState
-{
+public enum MonsterState {
     case idle
     case chasing
-    case attacking
+    case scratching
     case hurt
     case dead
 }
 
+public struct Monster: Actor {
+    public let speed: Double = 0.5
+    public let radius: Double = 0.4375
+    public var position: Vector
+    public var velocity: Vector = Vector(x: 0, y: 0)
+    public var health: Double = 50
+    public var state: MonsterState = .idle
+    public var animation: Animation = .monsterIdle
+    public let attackCooldown: Double = 0.4
+    public private(set) var lastAttackTime: Double = 0
+
+    public init(position: Vector) {
+        self.position = position
+    }
+}
+
 public extension Monster {
-    var isDead: Bool
-    {
+    var isDead: Bool {
         return health <= 0
     }
 
@@ -54,7 +48,7 @@ public extension Monster {
                 break
             }
             if canReachPlayer(in: world) {
-                state = .attacking
+                state = .scratching
                 animation = .monsterAttack
                 lastAttackTime = -attackCooldown
                 velocity = Vector(x: 0, y: 0)
@@ -62,26 +56,23 @@ public extension Monster {
             }
             let direction = world.player.position - position
             velocity = direction * (speed / direction.length)
-        case .attacking:
+        case .scratching:
             guard canReachPlayer(in: world) else {
                 state = .chasing
                 animation = .monsterWalk
                 break
             }
-            if animation.time - lastAttackTime >= attackCooldown
-            {
+            if animation.time - lastAttackTime >= attackCooldown {
                 lastAttackTime = animation.time
                 world.hurtPlayer(10)
             }
         case .hurt:
-            if animation.isCompleted
-            {
+            if animation.isCompleted {
                 state = .idle
                 animation = .monsterIdle
             }
         case .dead:
-            if animation.isCompleted
-            {
+            if animation.isCompleted {
                 animation = .monsterDead
             }
         }
@@ -101,23 +92,22 @@ public extension Monster {
         let playerDistance = (world.player.position - position).length
         return playerDistance - world.player.radius < reach
     }
-    
+
     func billboard(for ray: Ray) -> Billboard {
         let plane = ray.direction.orthogonal
         return Billboard(
             start: position - plane / 2,
             direction: plane,
             length: 1,
-            texture: animation.texture)
+            texture: animation.texture
+        )
     }
-    
-    func hitTest(_ ray: Ray) -> Vector?
-    {
+
+    func hitTest(_ ray: Ray) -> Vector? {
         guard isDead == false, let hit = billboard(for: ray).hitTest(ray) else {
             return nil
         }
-        guard (hit - position).length < radius else
-        {
+        guard (hit - position).length < radius else {
             return nil
         }
         return hit

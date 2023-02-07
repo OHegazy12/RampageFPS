@@ -3,8 +3,6 @@
 //  Engine
 //
 //  Created by Omar Hegazy on 6/12/21.
-//  Copyright © 2021 Nick Lockwood. All rights reserved.
-//
 
 public struct Rect {
     var min, max: Vector

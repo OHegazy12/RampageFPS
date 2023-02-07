@@ -3,11 +3,8 @@
 //  Engine
 //
 //  Created by Omar Hegazy on 6/18/21.
-//  Copyright © 2021 Nick Lockwood. All rights reserved.
-//
 
-public struct Rotation
-{
+public struct Rotation {
     var m1, m2, m3, m4: Double
 }
 
@@ -25,4 +22,3 @@ public extension Vector {
         )
     }
 }
-
