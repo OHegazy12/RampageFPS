@@ -2,10 +2,7 @@
 //  ViewController.swift
 //  Rampage
 //
-//  Created by Nick Lockwood on 17/05/2019.
-//  Programmed by Omar Hegazy on June 6th, 2021.
-//  Copyright © 2019 Nick Lockwood. All rights reserved.
-//
+//  Created by Omar Hegazy on 6/6/2021
 
 import UIKit
 import Engine
