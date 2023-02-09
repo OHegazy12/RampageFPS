@@ -2,8 +2,9 @@
 //  Sounds.swift
 //  Engine
 //
-//  Created by Omar Hegazy on 8/20/21.
+//  Created by Omar Hegazy on 2/5/23.
 
+import Foundation
 public enum SoundName: String, CaseIterable
 {
     case smgFire
@@ -19,10 +20,14 @@ public enum SoundName: String, CaseIterable
     case playerDeath
     case playerWalk
     case squelch
+    
 }
 
 public struct Sound
 {
-    public let name: SoundName
+    public let name: SoundName?
+    public let channel: Int?
+    public let volume: Double
+    public let pan: Double
+    public let delay: Double
 }
-

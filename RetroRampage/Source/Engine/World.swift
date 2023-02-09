@@ -154,6 +154,8 @@ public extension World {
         let color = Color(r: 255, g: 0, b: 0, a: 191)
         effects.append(Effect(type: .fadeIn, color: color, duration: 0.2))
         if player.isDead {
+            playSound(.playerDeath, at: player.position)
+            playSound(.squelch, at: player.position)
             effects.append(Effect(type: .fizzleOut, color: .red, duration: 2))
         }
     }
@@ -167,6 +169,11 @@ public extension World {
         monster.velocity = Vector(x: 0, y: 0)
         if monster.isDead {
             monster.state = .dead
+            playSound(.monsterDeath, at: monster.position)
+            if monster.isStuck(in: self)
+            {
+                playSound(.squelch, at: monster.position)
+            }
             monster.animation = .monsterDeath
         } else {
             monster.state = .hurt
@@ -175,7 +182,7 @@ public extension World {
         monsters[index] = monster
     }
     
-    mutating func playSound(_ name: SoundName, at position: Vector)
+    mutating func playSound(_ name: SoundName?, at position: Vector, in channel: Int? = nil)
     {
         let delta = position - player.position
         let distance = delta.length
@@ -184,7 +191,7 @@ public extension World {
         let delay = distance * 2 / 343
         let direction = distance > 0 ? delta / distance : player.direction
         let pan = player.direction.orthogonal.dot(direction)
-        sounds.append(Sound(name: name, volume: volume, pan: pan, delay: delay))
+        sounds.append(Sound(name: name, channel: channel, volume: volume, pan: pan, delay: delay))
     }
 
     mutating func endLevel() {
@@ -204,6 +211,7 @@ public extension World {
         self.switches = []
         self.isLevelEnded = false
         var pushwallCount = 0
+        var soundChannel = 0
         for y in 0 ..< map.height {
             for x in 0 ..< map.width {
                 let position = Vector(x: Double(x) + 0.5, y: Double(y) + 0.5)
@@ -212,7 +220,8 @@ public extension World {
                 case .nothing:
                     break
                 case .player:
-                    self.player = Player(position: position)
+                    self.player = Player(position: position, soundChannel: soundChannel)
+                    soundChannel += 1
                 case .monster:
                     monsters.append(Monster(position: position))
                 case .door:
@@ -223,7 +232,7 @@ public extension World {
                     pushwallCount += 1
                     if pushwalls.count >= pushwallCount {
                         let tile = pushwalls[pushwallCount - 1].tile
-                        pushwalls[pushwallCount - 1] = Pushwall(position: position, tile: tile)
+                        pushwalls[pushwallCount - 1] = Pushwall(position: position, tile: tile, soundChannel: soundChannel)
                         break
                     }
                     var tile = map[x, y]
@@ -232,7 +241,7 @@ public extension World {
                     } else {
                         tile = .wall
                     }
-                    pushwalls.append(Pushwall(position: position, tile: tile))
+                    pushwalls.append(Pushwall(position: position, tile: tile, soundChannel: soundChannel))
                 case .switch:
                     precondition(map[x, y].isWall, "Switch must be placed on a wall tile")
                     switches.append(Switch(position: position))

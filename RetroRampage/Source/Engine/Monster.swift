@@ -39,6 +39,7 @@ public extension Monster {
             if canSeePlayer(in: world) {
                 state = .chasing
                 animation = .monsterWalk
+                world.playSound(.monsterGroan, at: position)
             }
         case .chasing:
             guard canSeePlayer(in: world) else {
@@ -65,11 +66,12 @@ public extension Monster {
             if animation.time - lastAttackTime >= attackCooldown {
                 lastAttackTime = animation.time
                 world.hurtPlayer(10)
+                world.playSound(.monsterSwipe,at: position)
             }
         case .hurt:
             if animation.isCompleted {
-                state = .idle
-                animation = .monsterIdle
+                state = .chasing
+                animation = .monsterWalk
             }
         case .dead:
             if animation.isCompleted {

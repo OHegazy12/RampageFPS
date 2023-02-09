@@ -20,18 +20,24 @@ public struct Player: Actor {
     public var state: PlayerState = .idle
     public var animation: Animation = .smgIdle
     public let attackCooldown: Double = 0.25
+    public let soundChannel: Int
 
-    public init(position: Vector) {
+    public init(position: Vector, soundChannel: Int) {
         self.position = position
         self.velocity = Vector(x: 0, y: 0)
         self.direction = Vector(x: 1, y: 0)
         self.health = 100
+        self.soundChannel = soundChannel
     }
 }
 
 public extension Player {
     var isDead: Bool {
         return health <= 0
+    }
+    
+    var isMoving: Bool {
+        return velocity.x != 0 || velocity.y != 0
     }
 
     var canFire: Bool {
@@ -44,6 +50,7 @@ public extension Player {
     }
 
     mutating func update(with input: Input, in world: inout World) {
+        let wasMoving = isMoving
         direction = direction.rotated(by: input.rotation)
         velocity = direction * input.speed * speed
         if input.isFiring, canFire {
@@ -69,6 +76,14 @@ public extension Player {
                 state = .idle
                 animation = .smgIdle
             }
+        }
+        if isMoving, !wasMoving
+        {
+            world.playSound(.playerWalk, at: position, in: soundChannel)
+        }
+        else if !isMoving
+        {
+            world.playSound(nil, at: position, in: soundChannel)
         }
     }
 }
