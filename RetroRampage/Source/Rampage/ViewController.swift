@@ -108,17 +108,22 @@ class ViewController: UIViewController {
                     case .loadLevel(let index):
                         let index = index % levels.count
                         world.setLevel(levels[index])
+                        SoundManager.shared.clearAll()
                 case .playSounds(let sounds):
                     for sound in sounds
                     {
                         DispatchQueue.main.asyncAfter(deadline: .now() + sound.delay)
                         {
-                            guard let url = sound.name.url else
+                            guard let url = sound.name?.url else
                             {
+                                if let channel = sound.channel
+                                {
+                                    SoundManager.shared.clearChannel(channel)
+                                }
                                 return
                             }
                             
-                            try? SoundManager.shared.play(url, volume: sound.volume, pan: sound.pan)
+                            try? SoundManager.shared.play(url, channel: sound.channel, volume: sound.volume, pan: sound.pan)
                         }
                     }
                 }
