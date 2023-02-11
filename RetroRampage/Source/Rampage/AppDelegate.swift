@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  Rampage
 //
-// Created by Omar Hegazy
+//  Created by Omar Hegazy
 
 import UIKit
 
