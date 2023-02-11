@@ -17,7 +17,7 @@ In order to create the app, the following had to be done:
 - [x] Add some extra level designs such as secret passages.
 - [x] Add an end-of-level elevator and implement a second level.
 - [x] Implement sound effects.
-- [ ] Implement a power-up and inventory system.
+- [x] Implement a power-up and inventory system.
 - [ ] Use pathfinding to enhance the monsters' intelligence.
 - [ ] Implement a HUD.
 - [ ] Create a title screen.
