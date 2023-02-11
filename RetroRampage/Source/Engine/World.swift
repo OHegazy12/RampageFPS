@@ -18,6 +18,7 @@ public struct World {
     public private(set) var monsters: [Monster]
     public private(set) var player: Player!
     public private(set) var effects: [Effect]
+    public private(set) var pickups: [Pickup]
     private var sounds: [Sound] = []
     public private(set) var isLevelEnded: Bool
 
@@ -28,6 +29,7 @@ public struct World {
         self.switches = []
         self.monsters = []
         self.effects = []
+        self.pickups = []
         self.isLevelEnded = false
         reset()
     }
@@ -121,6 +123,29 @@ public extension World {
             monster.avoidWalls(in: self)
             monsters[i] = monster
         }
+        
+        // Handle pickups
+        for i in(0 ..< pickups.count).reversed()
+        {
+            let pickup = pickups[i]
+            if player.intersection(with: pickup) != nil
+            {
+                pickups.remove(at: i)
+                
+                switch pickup.type
+                {
+                    case .medkit:
+                        player.health += 25
+                        playSound(.medkit, at: pickup.position)
+                        effects.append(Effect(type: .fadeIn, color: .green, duration: 0.5))
+                    case .shotgun:
+                        player.setWeapon(.shotgun)
+                        playSound(.shotgunPickup, at: pickup.position)
+                        effects.append(Effect(type: .fadeIn, color: .white, duration: 0.5))
+                }
+            }
+        }
+        
         player.avoidWalls(in: self)
 
         // Check for stuck actors
@@ -142,7 +167,7 @@ public extension World {
     var sprites: [Billboard] {
         let ray = Ray(origin: player.position, direction: player.direction)
         return monsters.map { $0.billboard(for: ray) } + doors.map { $0.billboard }
-            + pushwalls.flatMap { $0.billboards(facing: player.position) }
+        + pushwalls.flatMap { $0.billboards(facing: player.position) + pickups.map {$0.billboard(for: ray)} }
     }
 
     mutating func hurtPlayer(_ damage: Double) {
@@ -201,14 +226,17 @@ public extension World {
 
     mutating func setLevel(_ map: Tilemap) {
         let effects = self.effects
+        let player = self.player!
         self = World(map: map)
         self.effects = effects
+        self.player.inherit(from: player)
     }
 
     mutating func reset() {
         self.monsters = []
         self.doors = []
         self.switches = []
+        self.pickups = []
         self.isLevelEnded = false
         var pushwallCount = 0
         var soundChannel = 0
@@ -224,6 +252,10 @@ public extension World {
                     soundChannel += 1
                 case .monster:
                     monsters.append(Monster(position: position))
+                case .medkit:
+                    pickups.append(Pickup(type: .medkit, position: position))
+                case .shotgun:
+                    pickups.append(Pickup(type: .shotgun, position: position))
                 case .door:
                     precondition(y > 0 && y < map.height, "Door cannot be placed on map edge")
                     let isVertical = map[x, y - 1].isWall && map[x, y + 1].isWall

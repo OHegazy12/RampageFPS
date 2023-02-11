@@ -23,6 +23,10 @@ public enum Texture: String, CaseIterable {
     case doorjamb, doorjamb2
     case switch1, switch2, switch3, switch4
     case elevatorFloor, elevatorCeiling, elevatorSideWall, elevatorBackWall
+    case medkit
+    case shotgun
+    case shotgunFire1, shotgunFire2, shotgunFire3, shotgunFire4
+    case shotgunPickup
 }
 
 public struct Textures {

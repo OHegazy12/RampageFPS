@@ -3,8 +3,6 @@
 //  Engine
 //
 //  Created by Omar Hegazy on 6/16/21.
-//  Copyright © 2019 Nick Lockwood. All rights reserved.
-//
 
 public enum Thing: Int, Decodable {
     case nothing
@@ -13,4 +11,6 @@ public enum Thing: Int, Decodable {
     case door
     case pushwall
     case `switch`
+    case medkit
+    case shotgun
 }

@@ -2,7 +2,7 @@
 //  Bitmap.swift
 //  Engine
 //
-//   Created by Omar Hegazy on 6/12/21.
+//  Created by Omar Hegazy on 6/12/21.
 
 public struct Bitmap {
     public private(set) var pixels: [Color]
